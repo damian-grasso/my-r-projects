@@ -1,0 +1,262 @@
+---
+title: "Inferential Data Analysis Of The ToothGrowth Dataset"
+author: "Damian Grasso"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+```{r echo=FALSE, message=FALSE, warnings=FALSE}
+library(lattice)
+library(dplyr)
+
+```
+
+# Overview 
+
+The ToothGrowth dataset measures the length of odontoblasts (cells responsible for tooth growth) in 60 guinea pigs, based on variable doses of supplements Orange Juice (OJ) or Ascorbic Acid (VC). 
+
+This project aims to identify which of the supplements is most effective at doses of 0.5mg/day, 1mg/day, 2mg/day and overall. 
+
+The data used to validate the experiment captures the length of odontoblasts (len), the supplement (supp) taken and dose for each guinea pig: 
+
+```{r echo=FALSE}
+head(ToothGrowth)
+
+```
+
+```{r echo=FALSE, fig.align='center' }
+supp.f <- factor(ToothGrowth$supp, levels = c("OJ", "VC"), labels = c("Orange Juice (OJ)", "Ascorbic Acid (VG)"))
+
+dose.f <- factor(ToothGrowth$dose, levels = c(0.5, 1, 2), labels = c("0.5", "1", "2"))
+
+bwplot(dose.f~len|supp.f, data = ToothGrowth, xlab = "Length of Odontoblasts", ylab="Dose (mg/day)", layout=c(1,2), main = "Distribution Of Odontoblast Length (By Dose And Supplement)")
+
+```
+
+## Key Assumptions
+
+A number of assumptions were identified for this experiment which should be used to interpret the results, including: 
+
+1. Each variable is an iid random variable (independent and identically distributed)
+
+2. Each hypothesis presented uses a two-sided test with a significance level of 0.95
+
+3. A power of 0.8 (80%) is considered an acceptable threshold
+
+# Experiments
+
+## Experiment 1 - 0.5 mg/day Dose
+
+A null hypothesis (H0) and alternate hypothesis (Ha) chosen to test this experiment are: 
+
+* H0: There is NO DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 0.5 mg/day of Orange Juice or Ascorbic Acid.
+
+* Ha: There is A DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 0.5 mg/day of Orange Juice or Ascorbic Acid.
+
+## Experiment 1 Results
+
+It was discovered that subjects taking Orange Juice had a GREATER MEAN INCREASE in odontoblasts length than Ascorbic Acid. 
+
+The difference was: 
+
+```{r echo=FALSE}
+test05 <- ToothGrowth %>% filter(dose == 0.5)
+
+meanOJ05 <- sum(test05 %>% filter(supp == "OJ") %>% select(len)) / (length(test05$len) / 2)
+meanVC05 <- sum(test05 %>% filter(supp == "VC") %>% select(len)) / (length(test05$len) / 2)
+
+testMean05 <- meanOJ05 - meanVC05
+
+print(testMean05)
+
+```
+
+## Experiment 1 Evaluation
+
+When a t test was conducted, this value was found to have an outlying p-value, meaning the NULL hypothesis CAN be safely rejected in favour of the alternate hypothesis. 
+
+```{r echo=FALSE}
+t.test(len ~ supp, paired = FALSE, var.equal = FALSE, data = test05)
+
+```
+
+The power of the 2 mg/day test was found to be 0.4729 (47.29%): 
+
+```{r echo=FALSE}
+testSd05 <- sqrt(var(test05 %>% filter(supp == "OJ") %>% select(len))/(length(test05) / 2) + var(test05 %>% filter(supp == "VC") %>% select(len))/(length(test05) / 2))[1]
+
+power.t.test(delta = testMean05 / 2, n = 20, alternative = "two.sided", sd = testSd05)
+
+```
+
+The number of samples required to achieve a power of 0.8 (80%) is 43: 
+
+```{r echo=FALSE}
+power.t.test(delta = testMean05 / 2, alternative = "two.sided", sd = testSd05, power = 0.8)
+
+```
+
+## Experiment 2 - 0.5 mg/day Dose
+
+A null hypothesis (H0) and alternate hypothesis (Ha) chosen to test this experiment are: 
+
+* H0: There is NO DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 1 mg/day of Orange Juice or Ascorbic Acid.
+
+* Ha: There is A DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 1 mg/day of Orange Juice or Ascorbic Acid.
+
+## Experiment 2 Results
+
+It was discovered that subjects taking Orange Juice had a GREATER MEAN INCREASE in odontoblasts length than Ascorbic Acid. 
+
+The difference was: 
+
+```{r echo=FALSE}
+test10 <- ToothGrowth %>% filter(dose == 1)
+
+meanOJ10 <- sum(test10 %>% filter(supp == "OJ") %>% select(len)) / (length(test10$len) / 2)
+meanVC10 <- sum(test10 %>% filter(supp == "VC") %>% select(len)) / (length(test10$len) / 2)
+
+testMean10 <- meanOJ10 - meanVC10
+
+print(testMean10)
+
+```
+
+## Experiment 2 Evaluation
+
+When a t test was conducted, this value was found to have an outlying p-value, meaning the NULL hypothesis CAN be safely rejected in favour of the alternate hypothesis. 
+
+```{r echo=FALSE}
+t.test(len ~ supp, paired = FALSE, var.equal = FALSE, data = test10)
+
+```
+
+The power of the 2 mg/day test was found to be 0.6725 (67.25%): 
+
+```{r echo=FALSE}
+testSd10 <- sqrt(var(test10 %>% filter(supp == "OJ") %>% select(len))/(length(test10) / 2) + var(test10 %>% filter(supp == "VC") %>% select(len))/(length(test10) / 2))[1]
+
+power.t.test(delta = testMean10 / 2, n = 20, alternative = "two.sided", sd = testSd10)
+
+```
+
+The number of samples required to achieve a power of 0.8 (80%) is 27: 
+
+```{r echo=FALSE}
+power.t.test(delta = testMean10 / 2, alternative = "two.sided", sd = testSd10, power = 0.8)
+
+```
+
+## Experiment 3 - 2 mg/day Dose
+
+A null hypothesis (H0) and alternate hypothesis (Ha) chosen to test this experiment are: 
+
+* H0: There is NO DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 2 mg/day of Orange Juice or Ascorbic Acid.
+
+* Ha: There is A DIFFERENCE in the MEAN INCREASE of odontoblast length when taking 2 mg/day of Orange Juice or Ascorbic Acid.
+
+## Experiment 3 Results
+
+It was discovered that subjects taking Orange Juice had a LESSER MEAN INCREASE in odontoblasts length than Ascorbic Acid. 
+
+The difference was: 
+
+```{r echo=FALSE}
+test20 <- ToothGrowth %>% filter(dose == 2)
+
+meanOJ20 <- sum(test20 %>% filter(supp == "OJ") %>% select(len)) / (length(test20$len) / 2)
+meanVC20 <- sum(test20 %>% filter(supp == "VC") %>% select(len)) / (length(test20$len) / 2)
+
+testMean20 <- meanOJ20 - meanVC20
+
+print(testMean20)
+
+```
+
+## Experiment 3 Evaluation
+
+When a t test was conducted, this value was found to have a p-value within the acceptable range, meaning the NULL hypothesis CANNOT be safely rejected in favour of the alternate hypothesis. 
+
+```{r echo=FALSE}
+t.test(len ~ supp, paired = FALSE, var.equal = FALSE, data = test20)
+
+```
+
+The power of the 2 mg/day test was found to be 0.0027 (2.7%): 
+
+```{r echo=FALSE}
+testSd20 <- sqrt(var(test20 %>% filter(supp == "OJ") %>% select(len))/(length(test20) / 2) + var(test20 %>% filter(supp == "VC") %>% select(len))/(length(test20) / 2))[1]
+
+power.t.test(delta = testMean20 / 2, n = 20, alternative = "two.sided", sd = testSd20)
+
+```
+
+The number of samples required to achieve a power of 0.8 (80%) is 196,665: 
+
+```{r echo=FALSE}
+power.t.test(delta = testMean20 / 2, alternative = "two.sided", sd = testSd20, power = 0.8)
+
+```
+
+## Experiment 4 - Overall
+
+* H0: There is NO DIFFERENCE in the MEAN INCREASE of odontoblast length when taking Orange Juice or Ascorbic Acid (H0) at any of the specified doses.
+
+* Ha: There is A DIFFERENCE in the MEAN INCREASE of odontoblast length when taking Orange Juice or Ascorbic Acid (H0) at any of the specified doses. 
+
+## Experiment 4 Results
+
+It was discovered that subjects taking Orange Juice had a GREATER MEAN INCREASE in odontoblasts length than Ascorbic Acid. 
+
+The difference was: 
+
+```{r echo=FALSE}
+meanOJ <- sum(ToothGrowth %>% filter(supp == "OJ") %>% select(len)) / (length(ToothGrowth$len) / 2)
+meanVC <- sum(ToothGrowth %>% filter(supp == "VC") %>% select(len)) / (length(ToothGrowth$len) / 2)
+
+testMean <- meanOJ - meanVC
+
+print(testMean)
+
+```
+
+## Experiment 4 Evaluation
+
+When a t test was conducted, this value was found to have a p-value within the acceptable range, meaning the NULL hypothesis CANNOT be safely rejected in favour of the alternate hypothesis. 
+
+```{r echo=FALSE}
+t.test(len ~ supp, paired = FALSE, var.equal = FALSE, data = ToothGrowth)
+
+```
+
+The power of the 2 mg/day test was found to be 0.8392 (83.92%): 
+
+```{r echo=FALSE}
+testSd <- sqrt(var(ToothGrowth %>% filter(supp == "OJ") %>% select(len))/(length(ToothGrowth$len) / 2) + var(ToothGrowth %>% filter(supp == "VC") %>% select(len))/(length(ToothGrowth$len) / 2))[1]
+
+power.t.test(delta = testMean / 2, n = 20, alternative = "two.sided", sd = testSd)
+
+```
+
+The number of samples required to achieve a power of 0.8 (80%) is 19: 
+
+```{r echo=FALSE}
+power.t.test(delta = testMean / 2, alternative = "two.sided", sd = testSd, power = 0.8)
+
+```
+
+# Conclusions
+
+Based on the analysis above, a number of conclusions can be inferred: 
+
+- When taking a dose of 0.5 mg/day, Orange Juice is found to be MORE effective at increasing odontoblast length than Ascorbic Acid, and enough samples were conducted to validate these claims
+
+- When taking a dose of 1 mg/day, Orange Juice is found to be MORE effective at increasing odontoblast length than Ascorbic Acid, and enough samples were conducted to validate these claims
+
+- When taking a dose of 2 mg/day, Orange Juice is found to be SLIGHTLY LESS effective at increasing odontoblast length than Ascorbic Acid, although the experiment indicated that the difference in values is NOT SIGNIFICANT ENOUGH. The sample size needed to validate this experiment with 80% power would be approximately 196,665 (1 extra sample could be added to ensure the populations were even)
+
+- When taking any specified dose, Orange Juice is found to be MORE effective at increasing odontoblast length than Ascorbic Acid, and enough samples were conducted to validate these claims
+
